@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard KPI · Proceso Arándanos</title>
+<style>
+:root{
+  --rojo:#DA291C; --verde:#78BE20; --gris:#8A8078;
+  --gris-meta:#D3CEC9; --gris-tabla:#A39C95; --fondo-tarjeta:#F1EFED; --rojo-suave:#FBE6E4; --texto-sec:#6B655E;
+  --negro:#000000; --grid:#E6E2DE;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:var(--negro);font-family:Calibri,Carlito,"Segoe UI",Arial,sans-serif;font-size:15px;line-height:1.35}
+.wrap{max-width:1280px;margin:0 auto;padding:0 20px 48px}
+header.top{border-top:6px solid var(--rojo);padding:18px 0 14px;display:flex;gap:16px 24px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
+h1{font-size:24px;line-height:1.15;margin:0 0 4px;font-weight:700;letter-spacing:.2px}
+.sub{color:var(--texto-sec);font-size:14.5px}
+.upd{display:flex;flex-direction:column;align-items:flex-end;gap:6px;max-width:100%}
+.btn{font:inherit;font-weight:700;border:0;border-radius:6px;padding:10px 16px;cursor:pointer;background:var(--rojo);color:#fff;display:inline-flex;gap:8px;align-items:center}
+.btn:hover{background:#b92218}
+.btn:focus-visible,.btn2:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #000;outline-offset:2px}
+.btn2{font:inherit;border:1px solid var(--gris-tabla);background:#fff;border-radius:6px;padding:7px 12px;cursor:pointer;color:#000}
+.btn2:hover{background:var(--fondo-tarjeta)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.btn2.dl{font-weight:700;padding:9px 14px}
+.src{font-size:13px;color:var(--texto-sec);text-align:right}
+.src b{color:#000;font-weight:700}
+.msg{margin:0 0 12px;padding:10px 14px;border-radius:6px;font-size:14px;display:none}
+.msg.ok{display:block;background:#EEF7E2;border-left:5px solid var(--verde)}
+.msg.err{display:block;background:var(--rojo-suave);border-left:5px solid var(--rojo)}
+.msg.info{display:block;background:var(--fondo-tarjeta);border-left:5px solid var(--gris)}
+h2{font-size:17px;margin:30px 0 10px;padding:7px 12px;background:var(--fondo-tarjeta);border-left:6px solid var(--rojo);font-weight:700;letter-spacing:.3px}
+h3{font-size:15px;margin:18px 0 8px;font-weight:700}
+.note{color:var(--texto-sec);font-size:13.5px;margin:-2px 0 10px}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 14px;align-items:end;background:#fff;border:1px solid var(--gris-meta);border-radius:8px;padding:12px 14px}
+.filters label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:700;color:var(--texto-sec);text-transform:uppercase;letter-spacing:.5px}
+.filters select,.filters input{font:inherit;font-size:15px;color:#000;padding:7px 8px;border:1px solid var(--gris-tabla);border-radius:5px;background:#fff;min-width:0;width:100%;text-transform:none}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:var(--fondo-tarjeta);border-radius:8px;padding:14px 16px;min-width:0}
+.kpi.hl{background:var(--rojo-suave)}
+.kpi .l{font-size:12.5px;font-weight:700;letter-spacing:.6px;color:var(--texto-sec);text-transform:uppercase}
+.kpi .v{font-size:30px;font-weight:700;color:#000;line-height:1.15;margin:4px 0 2px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kpi .v small{font-size:15px;font-weight:400;color:var(--texto-sec);margin-left:4px}
+.kpi .d{font-size:13px;color:var(--texto-sec)}
+.tw{overflow-x:auto;border-radius:6px}
+table{border-collapse:collapse;width:100%;font-family:Calibri,Carlito,"Segoe UI",Arial,sans-serif;font-size:12.5px;font-variant-numeric:tabular-nums}
+th{background:var(--gris-tabla);color:#000;font-weight:700;text-align:right;padding:7px 10px;white-space:nowrap}
+td{padding:6px 10px;text-align:right;border-bottom:1px solid var(--gris-tabla);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+tr.tot td{background:var(--fondo-tarjeta);font-weight:700;border-bottom:2px solid var(--gris-tabla)}
+td.z{color:var(--texto-sec)}
+.warn{font-size:13px;color:var(--texto-sec);margin:6px 0 0;padding-left:10px;border-left:3px solid var(--gris-meta)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px}
+.g2>div{min-width:0}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.chart{border:1px solid var(--gris-meta);border-radius:8px;padding:12px 14px 8px;min-width:0;position:relative}
+.chart h4{margin:0 0 2px;font-size:15px;font-weight:700}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--texto-sec);min-height:18px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.legend i.ln{height:3px;width:18px;vertical-align:3px;border-radius:2px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart svg text{font-family:Calibri,Carlito,"Segoe UI",Arial,sans-serif;font-size:12px;fill:var(--texto-sec)}
+.chart svg text.val{fill:#000;font-size:11.5px}
+.tip{position:absolute;pointer-events:none;background:#fff;border:1px solid var(--gris-tabla);border-radius:6px;padding:7px 10px;font-size:13px;box-shadow:0 3px 10px rgba(0,0,0,.14);display:none;z-index:5;white-space:nowrap}
+.tip b{display:block;margin-bottom:2px}
+.tip span{display:block;color:var(--texto-sec)}
+.tip span em{font-style:normal;color:#000;font-weight:700;margin-left:6px}
+.empty{color:var(--texto-sec);font-size:13.5px;padding:30px 0;text-align:center}
+footer{margin-top:28px;color:var(--texto-sec);font-size:12.5px;border-top:1px solid var(--gris-meta);padding-top:10px}
+#drop{position:fixed;inset:0;background:rgba(255,255,255,.92);border:5px dashed var(--rojo);display:none;align-items:center;justify-content:center;font-size:22px;font-weight:700;z-index:20}
+@media (max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.charts,.g2{grid-template-columns:1fr}.upd{align-items:flex-start}.acts{justify-content:flex-start}.src{text-align:left}}
+@media (max-width:480px){.wrap{padding:0 12px 40px}.kpi .v{font-size:24px}h1{font-size:20px}}
+</style>
+</head>
+<body>
+<div id="drop">Suelta aquí el archivo Excel para actualizar el dashboard</div>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1 id="title"></h1>
+      <div class="sub" id="subtitle"></div>
+    </div>
+    <div class="upd">
+      <div class="acts">
+        <button class="btn2 dl" id="btnPdf" type="button">⬇ Descargar PDF</button>
+        <button class="btn2 dl" id="btnXls" type="button">⬇ Descargar Excel</button>
+        <button class="btn" id="btnUp" type="button">⟳ Actualizar datos · Adjuntar Excel</button>
+      </div>
+      <input type="file" id="file" accept=".xlsx,.xlsm" hidden>
+      <div class="src" id="src"></div>
+    </div>
+  </header>
+  <div class="msg" id="msg" role="status" aria-live="polite"></div>
+
+  <h2>FILTROS DE BÚSQUEDA Y ANÁLISIS</h2>
+  <div class="filters">
+    <label>Fecha Inicio<input type="date" id="fIni"></label>
+    <label>Fecha Fin<input type="date" id="fFin"></label>
+    <label>Turno<select id="fTurno"></select></label>
+    <label>Línea<select id="fLinea"></select></label>
+    <label>Modalidad<select id="fMod"></select></label>
+    <div><button class="btn2" id="btnReset" type="button">Restablecer filtros</button></div>
+  </div>
+  <p class="note" style="margin-top:8px">Modalidad filtra solo la sección 1 (Resumen Ejecutivo). Los minutos de detención no distinguen modalidad: Registro_Detenciones no registra ese campo.</p>
+
+  <h2>1.  RESUMEN EJECUTIVO</h2>
+  <div class="kpis" id="kpis"></div>
+
+  <h2>2.  COMPARATIVOS</h2>
+  <h3>2.1  Por línea de empaque</h3>
+  <p class="note">Respeta fecha y turno; ignora el filtro de Línea. Dotación y Hrs Brutas T1/T2 = valores por turno (ignoran el filtro Turno).</p>
+  <div class="tw" id="tLineas"></div>
+  <div class="g2">
+    <div><h3>2.2  Por variedad / lote</h3><div class="tw" id="tLotes"></div><div id="wLotes"></div></div>
+    <div><h3>2.3  Por modalidad de vaciado</h3><div class="tw" id="tMods"></div><div id="wMods"></div></div>
+  </div>
+
+  <h2>3.  ANÁLISIS DE DETENCIONES  (Pareto por causa)</h2>
+  <p class="note">Minutos y frecuencia por causa en el rango/turno/línea seleccionados.</p>
+  <div class="tw" id="tCausas"></div><div id="wCausas"></div>
+
+  <h2>4.  RENDIMIENTO POR FORMATO DE EMPAQUE</h2>
+  <p class="note">Kg/Hr real vs meta por formato. % = rendimiento real / meta del formato.</p>
+  <div class="tw" id="tFormatos"></div><div id="wFormatos"></div>
+
+  <h2>5.  GRÁFICOS</h2>
+  <div class="charts">
+    <div class="chart" id="cTrend"></div>
+    <div class="chart" id="cLineas"></div>
+    <div class="chart" id="cCausas"></div>
+    <div class="chart" id="cFormatos"></div>
+  </div>
+
+  <h2>6.  EVOLUCIÓN EN EL TIEMPO</h2>
+  <p class="note" id="evoNote"></p>
+  <div class="g2">
+    <div><h3>Tendencia diaria</h3><div class="tw" id="tDias"></div>
+      <p style="margin:8px 0 0"><button class="btn2" id="btnDias" type="button"></button></p></div>
+    <div><h3>Resumen semanal</h3><div class="tw" id="tSem"></div></div>
+  </div>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+/* ===== Lector de Excel (.xlsx) y motor de cálculo del dashboard ===== */
+var REQ_SHEETS = { prod: 'registro_produccion', det: 'registro_detenciones', par: 'parametros', dash: 'dashboard kpi' };
+
+async function inflateRaw(u8) {
+  var ds = new DecompressionStream('deflate-raw');
+  var stream = new Blob([u8]).stream().pipeThrough(ds);
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+
+function zipDirectory(u8) {
+  var dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+  var eocd = -1;
+  for (var i = u8.length - 22; i >= Math.max(0, u8.length - 70000); i--) {
+    if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  }
+  if (eocd < 0) throw new Error('El archivo no es un Excel .xlsx válido.');
+  var n = dv.getUint16(eocd + 10, true), p = dv.getUint32(eocd + 16, true);
+  if (p === 0xFFFFFFFF) throw new Error('Formato de archivo no soportado (ZIP64).');
+  var td = new TextDecoder('utf-8'), out = {};
+  for (var k = 0; k < n; k++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) break;
+    var method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true);
+    var nl = dv.getUint16(p + 28, true), el = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true);
+    var lo = dv.getUint32(p + 42, true);
+    var name = td.decode(u8.subarray(p + 46, p + 46 + nl));
+    out[name.replace(/^\//, '')] = { method: method, csize: csize, lo: lo };
+    p += 46 + nl + el + cl;
+  }
+  return { dv: dv, u8: u8, files: out };
+}
+
+async function zipRead(zip, name) {
+  var e = zip.files[name];
+  if (!e) return null;
+  var nl = zip.dv.getUint16(e.lo + 26, true), el = zip.dv.getUint16(e.lo + 28, true);
+  var start = e.lo + 30 + nl + el;
+  var raw = zip.u8.subarray(start, start + e.csize);
+  var bytes = e.method === 0 ? raw : await inflateRaw(raw);
+  return new TextDecoder('utf-8').decode(bytes);
+}
+
+function xmlDecode(s) {
+  if (s.indexOf('&') < 0) return s;
+  return s.replace(/&(#x[0-9a-fA-F]+|#\d+|amp|lt|gt|quot|apos);/g, function (m, e) {
+    if (e === 'amp') return '&'; if (e === 'lt') return '<'; if (e === 'gt') return '>';
+    if (e === 'quot') return '"'; if (e === 'apos') return "'";
+    return String.fromCodePoint(e[1] === 'x' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10));
+  });
+}
+function xmlAttrs(s) {
+  var o = {}, re = /([\w:]+)\s*=\s*"([^"]*)"/g, m;
+  while ((m = re.exec(s))) o[m[1]] = xmlDecode(m[2]);
+  return o;
+}
+function siText(si) {
+  si = si.replace(/<rPh[\s\S]*?<\/rPh>/g, '');
+  var out = '', re = /<t(?:\s[^>]*)?>([\s\S]*?)<\/t>/g, m;
+  while ((m = re.exec(si))) out += m[1];
+  return xmlDecode(out);
+}
+
+/* Devuelve { fila: { COL: valor } } usando los valores guardados en el archivo */
+function parseSheet(xml, shared, maxCol) {
+  var rows = {}, reRow = /<row\b([^>]*?)(?:\/>|>([\s\S]*?)<\/row>)/g, mr;
+  var reC = /<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g;
+  while ((mr = reRow.exec(xml))) {
+    if (!mr[2]) continue;
+    var body = mr[2], mc, obj = null, rnum = 0;
+    reC.lastIndex = 0;
+    while ((mc = reC.exec(body))) {
+      if (!mc[2]) continue;
+      var a = mc[1], ref = /\br="([A-Z]+)(\d+)"/.exec(a);
+      if (!ref) continue;
+      var col = ref[1];
+      if (maxCol && (col.length > maxCol.length || (col.length === maxCol.length && col > maxCol))) continue;
+      var t = (/\bt="(\w+)"/.exec(a) || [])[1], val = null, inner = mc[2];
+      if (t === 'inlineStr') val = siText(inner);
+      else {
+        var mv = /<v(?:\s[^>]*)?>([\s\S]*?)<\/v>/.exec(inner);
+        if (mv) {
+          if (t === 's') val = shared[+mv[1]];
+          else if (t === 'str') val = xmlDecode(mv[1]);
+          else if (t === 'b') val = mv[1] === '1';
+          else if (t === 'e') val = null;
+          else { val = parseFloat(mv[1]); if (isNaN(val)) val = null; }
+        }
+      }
+      if (val === null || val === '' || val === undefined) continue;
+      if (!obj) { obj = {}; rnum = +ref[2]; }
+      obj[col] = val;
+    }
+    if (obj) rows[rnum] = obj;
+  }
+  return rows;
+}
+
+async function readWorkbook(arrayBuffer) {
+  var zip = zipDirectory(new Uint8Array(arrayBuffer));
+  var wb = await zipRead(zip, 'xl/workbook.xml');
+  var rels = await zipRead(zip, 'xl/_rels/workbook.xml.rels');
+  if (!wb || !rels) throw new Error('El archivo no es un libro de Excel (.xlsx).');
+  var relMap = {}, m, re = /<Relationship\b([^>]*)>/g;
+  while ((m = re.exec(rels))) { var a = xmlAttrs(m[1]); relMap[a.Id] = a.Target; }
+  var sheets = {}, names = [];
+  re = /<sheet\b([^>]*)>/g;
+  while ((m = re.exec(wb))) {
+    var at = xmlAttrs(m[1]), target = relMap[at['r:id']] || '';
+    target = target.replace(/^\//, '');
+    if (target.indexOf('xl/') !== 0) target = 'xl/' + target;
+    sheets[at.name.trim().toLowerCase()] = target; names.push(at.name);
+  }
+  var sst = await zipRead(zip, 'xl/sharedStrings.xml'), shared = [];
+  if (sst) { re = /<si\b[^>]*?(?:\/>|>([\s\S]*?)<\/si>)/g; while ((m = re.exec(sst))) shared.push(m[1] ? siText(m[1]) : ''); }
+  var out = {};
+  for (var key in REQ_SHEETS) {
+    var path = sheets[REQ_SHEETS[key]];
+    if (!path) {
+      if (key === 'dash') { out.dash = null; continue; }
+      throw new Error('Falta la hoja "' + ({ prod: 'Registro_Produccion', det: 'Registro_Detenciones', par: 'Parametros' })[key] +
+        '" en el archivo. Hojas encontradas: ' + names.join(', ') + '.');
+    }
+    var xml = await zipRead(zip, path);
+    if (!xml) throw new Error('No se pudo leer la hoja ' + REQ_SHEETS[key] + '.');
+    out[key] = parseSheet(xml, shared, 'Z');
+  }
+  return out;
+}
+
+/* ---------- fechas ---------- */
+function serialToISO(n) { return new Date(Date.UTC(1899, 11, 30) + Math.round(n) * 86400000).toISOString().slice(0, 10); }
+function isoToSerial(s) { var p = s.split('-'); return Math.round((Date.UTC(+p[0], +p[1] - 1, +p[2]) - Date.UTC(1899, 11, 30)) / 86400000); }
+function weekNum(serial) { // WEEKNUM(fecha,1): semana inicia domingo, 1 de enero = semana 1
+  var d = new Date(Date.UTC(1899, 11, 30) + serial * 86400000), y0 = Date.UTC(d.getUTCFullYear(), 0, 1);
+  var doy = Math.round((d.getTime() - y0) / 86400000), dow0 = new Date(y0).getUTCDay();
+  return Math.floor((doy + dow0) / 7) + 1;
+}
+
+var isNum = function (v) { return typeof v === 'number' && isFinite(v); };
+var num = function (v) { return isNum(v) ? v : 0; };
+var str = function (v) { return v === undefined || v === null ? '' : String(v); };
+
+/* ---------- del libro a un modelo compacto ---------- */
+function buildModel(wb, fileName) {
+  var par = wb.par, P = [], D = [], r, o;
+  var metas = [], lists = { lineas: [], turnos: [], modalidades: [] };
+  var rowsPar = Object.keys(par).map(Number).sort(function (a, b) { return a - b; });
+  rowsPar.forEach(function (rn) {
+    if (rn < 4) return; o = par[rn];
+    if (o.A !== undefined) lists.lineas.push(str(o.A));
+    if (o.B !== undefined) lists.turnos.push(str(o.B));
+    if (o.C !== undefined) lists.modalidades.push(str(o.C));
+    if (o.F !== undefined) metas.push([str(o.F), isNum(o.G) ? o.G : null]);
+  });
+  var metaOf = function (f) {
+    var k = str(f).toLowerCase();
+    for (var i = 0; i < metas.length; i++) if (metas[i][0].toLowerCase() === k && metas[i][1] !== null) return metas[i][1];
+    return null;
+  };
+  Object.keys(wb.prod).map(Number).sort(function (a, b) { return a - b; }).forEach(function (rn) {
+    if (rn < 4) return; o = wb.prod[rn];
+    if (!isNum(o.A)) return;
+    var p = isNum(o.P) ? o.P : (isNum(o.J) && isNum(o.K) ? (o.K > o.J ? (o.K - o.J) * 24 : (o.K + 1 - o.J) * 24) : null);
+    var q = isNum(o.Q) ? o.Q : (p === null ? null : Math.max(0, p - num(o.M) / 60));
+    var meta = isNum(o.R) ? o.R : (o.I === undefined ? null : (metaOf(o.I) === null ? 1000 : metaOf(o.I)));
+    var s = isNum(o.S) ? o.S : (q === null || meta === null ? null : q * meta);
+    var hh = isNum(o.W) ? o.W : (q === null || !isNum(o.N) ? null : q * o.N);
+    P.push([o.A, isNum(o.B) ? o.B : weekNum(Math.floor(o.A)), str(o.C), str(o.E), str(o.F), str(o.G), str(o.I),
+      isNum(o.N) ? o.N : null, isNum(o.O) ? o.O : null, p, q, s, hh]);
+  });
+  Object.keys(wb.det).map(Number).sort(function (a, b) { return a - b; }).forEach(function (rn) {
+    if (rn < 4) return; o = wb.det[rn];
+    if (!isNum(o.A)) return;
+    D.push([o.A, str(o.B), str(o.D), isNum(o.G) ? o.G : null, str(o.H)]);
+  });
+  if (!P.length) throw new Error('La hoja Registro_Produccion no tiene filas con fecha.');
+
+  // Estructura (filas de cada tabla) tomada de la hoja "Dashboard KPI"; si no existe se usa Parametros
+  var L = { lineas: [], lotes: [], modalidades: [], causas: [], formatos: [], semanas: [], dias: 0 };
+  var F = {}, title = null, subtitle = null, dash = wb.dash;
+  if (dash) {
+    var rns = Object.keys(dash).map(Number).sort(function (a, b) { return a - b; });
+    var take = function (start, col, stopTotal, numeric) {
+      var out = [];
+      for (var rr = start; rr < start + 200; rr++) {
+        var c = dash[rr] && dash[rr][col];
+        if (c === undefined) break;
+        if (stopTotal && /^total/i.test(str(c))) break;
+        out.push(numeric ? c : str(c));
+      }
+      return out;
+    };
+    rns.forEach(function (rn) {
+      var x = dash[rn], b = str(x.B).trim(), c = str(x.C).trim();
+      if (b === 'Línea' && /^Kg/i.test(c)) L.lineas = take(rn + 1, 'B', true);
+      else if (/^Variedad/i.test(b)) L.lotes = take(rn + 1, 'B', true);
+      else if (b === 'Modalidad' && /^Kg/i.test(c)) L.modalidades = take(rn + 1, 'B', true);
+      else if (/^Causa de Detenci/i.test(b)) L.causas = take(rn + 1, 'B', true);
+      else if (/^Formato de Empaque/i.test(b)) L.formatos = take(rn + 1, 'B', true);
+      else if (b === 'Fecha' && /^Kg/i.test(c)) L.dias = take(rn + 1, 'B', false, true).length;
+      if (str(x.J).trim() === 'Semana') L.semanas = take(rn + 1, 'J', false, true).filter(isNum);
+      if (b === 'Fecha Inicio') { F.ini = x.C; F.fin = x.F; F.turno = x.I; F.linea = x.L; }
+      if (b === 'Modalidad' && !/^Kg/i.test(c) && rn < 12) F.modalidad = x.C;
+    });
+    if (dash[1] && dash[1].B) title = str(dash[1].B);
+    if (dash[2] && dash[2].B) subtitle = str(dash[2].B);
+  }
+  var uniq = function (idx, arr) { var s = {}, out = []; arr.forEach(function (x) { var v = x[idx]; if (v !== '' && !s[v]) { s[v] = 1; out.push(v); } }); return out; };
+  if (!L.lineas.length) L.lineas = lists.lineas.slice();
+  if (!L.lotes.length) L.lotes = uniq(5, P);
+  if (!L.modalidades.length) L.modalidades = lists.modalidades.slice();
+  if (!L.causas.length) L.causas = uniq(4, D);
+  if (!L.formatos.length) L.formatos = metas.map(function (m) { return m[0]; });
+  if (!L.semanas.length) for (r = 26; r <= 52; r++) L.semanas.push(r);
+  if (L.dias < 14) L.dias = 71;
+  var maxF = 0; P.forEach(function (x) { if (x[0] > maxF) maxF = x[0]; });
+  var filt = {
+    ini: isNum(F.ini) ? Math.floor(F.ini) : Math.floor(maxF), fin: isNum(F.fin) ? Math.floor(F.fin) : Math.floor(maxF),
+    turno: str(F.turno) || 'Todos', linea: str(F.linea) || 'Todas', modalidad: str(F.modalidad) || 'Todas'
+  };
+  return { P: P, D: D, metas: metas, lists: lists, L: L, filt: filt, title: title, subtitle: subtitle,
+    file: fileName || '', loaded: new Date().toISOString(), maxFecha: Math.floor(maxF) };
+}
+
+/* ---------- cálculo: replica las fórmulas SUMIFS / AVERAGEIFS / COUNTIFS de "Dashboard KPI" ---------- */
+function compute(M, f) {
+  var lc = function (s) { return s.toLowerCase(); };
+  // criterio "<>" de Excel = celda no vacía; texto = igualdad sin distinguir mayúsculas
+  var crit = function (sel, all) { return sel === all ? null : lc(sel); };
+  var ok = function (v, c) { return c === null ? v !== '' : lc(v) === c; };
+  var T = crit(f.turno, 'Todos'), Ln = crit(f.linea, 'Todas'), Mo = crit(f.modalidad, 'Todas');
+  var inR = function (d) { return d >= f.ini && d <= f.fin; };
+  var P = M.P, D = M.D;
+  var agg = function (rows) {
+    var a = { kg: 0, meta: 0, hb: 0, he: 0, hh: 0, dotS: 0, dotN: 0, n: 0 };
+    rows.forEach(function (x) {
+      a.n++; a.kg += num(x[8]); a.hb += num(x[9]); a.he += num(x[10]); a.meta += num(x[11]); a.hh += num(x[12]);
+      if (x[7] !== null) { a.dotS += x[7]; a.dotN++; }
+    });
+    a.cumpl = a.meta ? a.kg / a.meta : 0; a.kghr = a.he ? a.kg / a.he : 0; a.kghh = a.hh ? a.kg / a.hh : 0;
+    a.dot = a.dotN ? a.dotS / a.dotN : 0; a.efic = a.hb ? a.he / a.hb : 0;
+    return a;
+  };
+  var sumD = function (rows) { var s = 0; rows.forEach(function (x) { s += num(x[3]); }); return s; };
+  var Pr = P.filter(function (x) { return inR(x[0]); });            // rango de fechas
+  var Dr = D.filter(function (x) { return inR(x[0]); });
+  var PrT = Pr.filter(function (x) { return ok(x[2], T); });          // + turno
+  var PrTL = PrT.filter(function (x) { return ok(x[3], Ln); });       // + línea
+  var DrT = Dr.filter(function (x) { return ok(x[1], T); });
+  var DrTL = DrT.filter(function (x) { return ok(x[2], Ln); });
+  var R = {};
+
+  // 1. Resumen ejecutivo (fecha, turno, línea, modalidad)
+  var k = agg(PrTL.filter(function (x) { return ok(x[4], Mo); }));
+  R.kpi = { kg: k.kg, cumpl: k.cumpl, kghr: k.kghr, kghh: k.kghh, he: k.he, minDet: sumD(DrTL), dot: k.dot, efic: k.efic,
+    hb: k.hb, kgDia: k.kg / (f.fin - f.ini + 1) };
+
+  // 2.1 Por línea (fecha y turno; ignora filtro de línea)
+  var tot = { kg: 0, meta: 0, det: 0, hb1: 0, hb2: 0 };
+  R.lineas = M.L.lineas.map(function (name) {
+    var c = lc(name), a = agg(PrT.filter(function (x) { return lc(x[3]) === c; }));
+    var t1 = agg(Pr.filter(function (x) { return lc(x[3]) === c && lc(x[2]) === 'turno 1'; }));
+    var t2 = agg(Pr.filter(function (x) { return lc(x[3]) === c && lc(x[2]) === 'turno 2'; }));
+    var det = sumD(DrT.filter(function (x) { return lc(x[2]) === c; }));
+    tot.kg += a.kg; tot.meta += a.meta; tot.det += det; tot.hb1 += t1.hb; tot.hb2 += t2.hb;
+    return { name: name, kg: a.kg, meta: a.meta, cumpl: a.cumpl, det: det, kghr: a.kghr, kghh: a.kghh, dot1: t1.dot, dot2: t2.dot, hb1: t1.hb, hb2: t2.hb };
+  });
+  var allT = agg(PrT);
+  R.lineasTot = { kg: tot.kg, meta: tot.meta, cumpl: tot.meta ? tot.kg / tot.meta : 0, det: tot.det,
+    kghr: allT.he ? tot.kg / allT.he : 0, kghh: allT.hh ? tot.kg / allT.hh : 0,
+    dot1: agg(Pr.filter(function (x) { return lc(x[2]) === 'turno 1'; })).dot,
+    dot2: agg(Pr.filter(function (x) { return lc(x[2]) === 'turno 2'; })).dot, hb1: tot.hb1, hb2: tot.hb2 };
+
+  // 2.2 Por variedad / lote  y  2.3 por modalidad (fecha, turno, línea)
+  var by = function (labels, idx) {
+    return labels.map(function (name) {
+      var c = lc(name), a = agg(PrTL.filter(function (x) { return lc(x[idx]) === c; }));
+      return { name: name, kg: a.kg, cumpl: a.cumpl, kghr: a.kghr, n: a.n };
+    });
+  };
+  R.lotes = by(M.L.lotes, 5);
+  R.modalidades = by(M.L.modalidades, 4);
+
+  // 3. Detenciones por causa (fecha, turno, línea)
+  var causas = M.L.causas.map(function (name) {
+    var c = lc(name), rows = DrTL.filter(function (x) { return lc(x[4]) === c; });
+    return { name: name, min: sumD(rows), n: rows.length };
+  });
+  var totMin = 0, totN = 0; causas.forEach(function (c) { totMin += c.min; totN += c.n; });
+  causas.forEach(function (c) {
+    c.pct = totMin ? c.min / totMin : 0;
+    c.rank = c.min === 0 ? null : 1 + causas.filter(function (o) { return o.min > c.min; }).length;
+  });
+  R.causas = causas; R.causasTot = { min: totMin, n: totN, pct: totMin ? 1 : 0 };
+  R.detOtras = sumD(DrTL) - totMin; // minutos de causas que no figuran en la tabla
+
+  // 4. Rendimiento por formato (fecha, turno, línea)
+  R.formatos = M.L.formatos.map(function (name) {
+    var c = lc(name), a = agg(PrTL.filter(function (x) { return lc(x[6]) === c; })), meta = 0;
+    for (var i = 0; i < M.metas.length; i++) if (lc(M.metas[i][0]) === c) { meta = M.metas[i][1] || 0; break; }
+    return { name: name, kg: a.kg, kghr: a.kghr, meta: meta, pct: meta ? a.kghr / meta : 0 };
+  });
+
+  // Categorías presentes en los datos filtrados que no figuran como fila en las tablas
+  var fuera = function (rows, idx, labels, vi) {
+    var set = {}, o = {}, out = [];
+    labels.forEach(function (l) { set[lc(l)] = 1; });
+    rows.forEach(function (x) { if (!set[lc(x[idx])]) { var k = x[idx] === '' ? '(sin dato)' : x[idx]; o[k] = (o[k] || 0) + num(x[vi]); } });
+    for (var k in o) if (o[k] > 1e-9) out.push([k, o[k]]);
+    return out.sort(function (p, q) { return q[1] - p[1]; });
+  };
+  R.fuera = { lotes: fuera(PrTL, 5, M.L.lotes, 8), modalidades: fuera(PrTL, 4, M.L.modalidades, 8),
+    causas: fuera(DrTL, 4, M.L.causas, 3), formatos: fuera(PrTL, 6, M.L.formatos, 8) };
+
+  // 6. Evolución diaria (desde Fecha Inicio; turno y línea) y semanal
+  var PT = P.filter(function (x) { return ok(x[2], T) && ok(x[3], Ln); });
+  var DT = D.filter(function (x) { return ok(x[1], T) && ok(x[2], Ln); });
+  var dayP = {}, dayD = {}, wk = {};
+  PT.forEach(function (x) {
+    var d = dayP[x[0]] || (dayP[x[0]] = { kg: 0, meta: 0 }); d.kg += num(x[8]); d.meta += num(x[11]);
+    var w = wk[x[1]] || (wk[x[1]] = { kg: 0, meta: 0 }); w.kg += num(x[8]); w.meta += num(x[11]);
+  });
+  DT.forEach(function (x) { dayD[x[0]] = (dayD[x[0]] || 0) + num(x[3]); });
+  R.dias = [];
+  for (var i = 0; i < M.L.dias; i++) {
+    var s = f.ini + i, d = dayP[s] || { kg: 0, meta: 0 };
+    R.dias.push({ fecha: s, kg: d.kg, meta: d.meta, cumpl: d.meta ? d.kg / d.meta : 0, det: dayD[s] || 0 });
+  }
+  R.semanas = M.L.semanas.map(function (w) {
+    var a = wk[w] || { kg: 0, meta: 0 };
+    return { sem: w, kg: a.kg, cumpl: a.meta ? a.kg / a.meta : 0 };
+  });
+  return R;
+}
+
+
+</script>
+<script>
+(function(){
+'use strict';
+var KEY='kpi_arandanos_modelo_v1', M=null, F=null, showAllDays=false, R=null;
+try{ var st=localStorage.getItem(KEY); if(st){ var o=JSON.parse(st); if(o&&o.P&&o.loaded>EMBEDDED.loaded) M=o; } }catch(e){}
+
+var $=function(id){return document.getElementById(id);};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+var nf0=new Intl.NumberFormat('es-PE',{maximumFractionDigits:0}), nf1=new Intl.NumberFormat('es-PE',{minimumFractionDigits:1,maximumFractionDigits:1});
+var n0=function(v){return nf0.format(Math.abs(v)<0.5?0:v);}, n1=function(v){return nf1.format(Math.abs(v)<0.05?0:v);}, pc=function(v){return nf1.format(v*100)+'%';};
+var dmy=function(s){var i=serialToISO(s);return i.slice(8,10)+'-'+i.slice(5,7)+'-'+i.slice(0,4);};
+var dm=function(s){var i=serialToISO(s);return i.slice(8,10)+'-'+i.slice(5,7);};
+
+function msg(kind,text){var m=$('msg');m.className='msg '+kind;m.textContent=text;}
+
+function fillSelect(el,first,items,sel){
+  var seen={},list=[first];
+  items.forEach(function(x){if(x!==''&&!seen[x.toLowerCase()]){seen[x.toLowerCase()]=1;list.push(x);}});
+  if(sel&&list.map(function(x){return x.toLowerCase();}).indexOf(sel.toLowerCase())<0) list.push(sel);
+  el.textContent='';
+  list.forEach(function(x){var o=document.createElement('option');o.value=x;o.textContent=x;el.appendChild(o);});
+  for(var i=0;i<list.length;i++) if(list[i].toLowerCase()===String(sel).toLowerCase()) el.selectedIndex=i;
+}
+function setFilters(f){
+  F={ini:f.ini,fin:f.fin,turno:f.turno,linea:f.linea,modalidad:f.modalidad};
+  $('fIni').value=serialToISO(F.ini); $('fFin').value=serialToISO(F.fin);
+  var uT=[],uL=[],uM=[]; M.P.forEach(function(x){uT.push(x[2]);uL.push(x[3]);uM.push(x[4]);});
+  fillSelect($('fTurno'),'Todos',M.lists.turnos.concat(uT),F.turno);
+  fillSelect($('fLinea'),'Todas',M.lists.lineas.concat(uL),F.linea);
+  fillSelect($('fMod'),'Todas',M.lists.modalidades.concat(uM),F.modalidad);
+}
+function readFilters(){
+  var a=$('fIni').value,b=$('fFin').value;
+  if(!a||!b) return false;
+  F.ini=isoToSerial(a);F.fin=isoToSerial(b);F.turno=$('fTurno').value;F.linea=$('fLinea').value;F.modalidad=$('fMod').value;
+  return true;
+}
+
+/* ---------- tablas ---------- */
+function table(el,head,rows,totRow){
+  var h='<table><thead><tr>'+head.map(function(c){return '<th scope="col">'+esc(c)+'</th>';}).join('')+'</tr></thead><tbody>';
+  var tr=function(r,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'>'+r.map(function(c,i){
+    var z=(i>0&&(c==='0'||c==='0.0'||c==='0.0%'||c===''));return '<td'+(z&&!cls?' class="z"':'')+'>'+esc(c)+'</td>';}).join('')+'</tr>';};
+  rows.forEach(function(r){h+=tr(r);});
+  if(totRow) h+=tr(totRow,'tot');
+  el.innerHTML=h+'</tbody></table>';
+}
+function warn(el,list,unit,what){
+  if(!list.length){el.innerHTML='';return;}
+  var tot=0;list.forEach(function(x){tot+=x[1];});
+  var names=list.slice(0,6).map(function(x){return x[0]+' ('+n0(x[1])+')';}).join(', ')+(list.length>6?' y '+(list.length-6)+' más':'');
+  el.innerHTML='<p class="warn">Fuera de esta tabla: '+esc(n0(tot)+' '+unit)+' del filtro actual están registrados con '+esc(what)+' que no figura en las filas del dashboard: '+esc(names)+'.</p>';
+}
+
+/* ---------- gráficos SVG ---------- */
+var NS='http://www.w3.org/2000/svg';
+function S(tag,at,parent,text){var e=document.createElementNS(NS,tag);for(var k in at)e.setAttribute(k,at[k]);if(text!==undefined)e.textContent=text;if(parent)parent.appendChild(e);return e;}
+function niceMax(v){if(v<=0)return 1;var p=Math.pow(10,Math.floor(Math.log10(v))),m=v/p;var s=m<=1?1:m<=2?2:m<=2.5?2.5:m<=5?5:10;return s*p;}
+function ticks(max){var step=niceMax(max/4),out=[];for(var t=0;t<=max+step*0.999;t+=step){out.push(t);if(t>=max)break;}return out;}
+function shell(el,title,legend){
+  el.textContent='';
+  var h=document.createElement('h4');h.textContent=title;el.appendChild(h);
+  var lg=document.createElement('div');lg.className='legend';
+  (legend||[]).forEach(function(s){var sp=document.createElement('span');var i=document.createElement('i');if(s.line)i.className='ln';i.style.background=s.color;sp.appendChild(i);sp.appendChild(document.createTextNode(s.name));lg.appendChild(sp);});
+  el.appendChild(lg);
+  var tip=document.createElement('div');tip.className='tip';el.appendChild(tip);
+  return tip;
+}
+function showTip(el,tip,ev,title,lines){
+  tip.textContent='';var b=document.createElement('b');b.textContent=title;tip.appendChild(b);
+  lines.forEach(function(l){var s=document.createElement('span');s.textContent=l[0];var e=document.createElement('em');e.textContent=l[1];s.appendChild(e);tip.appendChild(s);});
+  tip.style.display='block';
+  var r=el.getBoundingClientRect(),x=ev.clientX-r.left+14,y=ev.clientY-r.top+12;
+  if(x+tip.offsetWidth>r.width-4)x=Math.max(4,ev.clientX-r.left-tip.offsetWidth-14);
+  if(y+tip.offsetHeight>r.height-4)y=Math.max(4,r.height-tip.offsetHeight-4);
+  tip.style.left=x+'px';tip.style.top=y+'px';
+}
+function axes(svg,W,H,m,max,fmt){
+  var tk=ticks(max),top=tk[tk.length-1],y=function(v){return m.t+(H-m.t-m.b)*(1-v/top);};
+  tk.forEach(function(t){S('line',{x1:m.l,x2:W-m.r,y1:y(t),y2:y(t),stroke:t===0?'#A39C95':'#E6E2DE','stroke-width':1},svg);
+    S('text',{x:m.l-6,y:y(t)+4,'text-anchor':'end'},svg,fmt(t));});
+  return y;
+}
+function barChart(el,title,cats,series,fmt){
+  var tip=shell(el,title,series.length>1?series:null);
+  var total=0;series.forEach(function(s){s.values.forEach(function(v){total+=Math.abs(v);});});
+  if(!total){var d=document.createElement('div');d.className='empty';d.textContent='Sin datos para los filtros seleccionados.';el.appendChild(d);return;}
+  var W=Math.max(300,el.clientWidth-28),n=cats.length,m={t:16,r:8,b:26,l:50};
+  var band=(W-m.l-m.r)/n,maxLen=0;cats.forEach(function(c){maxLen=Math.max(maxLen,c.length);});
+  var rot=maxLen*6.3>band-6, lab=function(c){return c.length>24?c.slice(0,23)+'…':c;};
+  if(rot)m.b=Math.min(118,Math.min(maxLen,24)*6.3*0.66+22);
+  var H=250+m.b,svg=S('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':title},el);
+  var max=0;series.forEach(function(s){s.values.forEach(function(v){if(v>max)max=v;});});
+  var y=axes(svg,W,H,m,max,n0),y0=y(0),ns=series.length;
+  var bw=Math.min(34,(band*0.72-2*(ns-1))/ns),gw=bw*ns+2*(ns-1);
+  cats.forEach(function(c,i){
+    var cx=m.l+band*i+band/2;
+    series.forEach(function(s,j){
+      var v=s.values[i]; if(!(v>0))return;
+      var x=cx-gw/2+j*(bw+2),yy=y(v),h=y0-yy,r=Math.min(4,bw/2,h);
+      S('path',{d:'M'+x+','+y0+'V'+(yy+r)+'Q'+x+','+yy+' '+(x+r)+','+yy+'H'+(x+bw-r)+'Q'+(x+bw)+','+yy+' '+(x+bw)+','+(yy+r)+'V'+y0+'Z',fill:s.color},svg);
+      if(ns===1&&band>=40)S('text',{x:x+bw/2,y:yy-5,'text-anchor':'middle','class':'val'},svg,fmt(v));
+    });
+    if(rot)S('text',{x:cx+4,y:y0+14,'text-anchor':'end',transform:'rotate(-40 '+(cx+4)+' '+(y0+14)+')'},svg,lab(c));
+    else S('text',{x:cx,y:y0+16,'text-anchor':'middle'},svg,lab(c));
+    var hit=S('rect',{x:m.l+band*i,y:m.t,width:band,height:H-m.t-m.b,fill:'transparent'},svg);
+    var mv=function(ev){showTip(el,tip,ev,c,series.map(function(s){return [s.name,fmt(s.values[i])];}));};
+    hit.addEventListener('pointermove',mv);hit.addEventListener('pointerdown',mv);
+    hit.addEventListener('pointerleave',function(){tip.style.display='none';});
+  });
+}
+function lineChart(el,title,labels,series,fmt){
+  var tip=shell(el,title,series.map(function(s){return {name:s.name,color:s.color,line:true};}));
+  var W=Math.max(300,el.clientWidth-28),m={t:16,r:14,b:28,l:54},H=278,n=labels.length;
+  var svg=S('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':title},el);
+  var max=0;series.forEach(function(s){s.values.forEach(function(v){if(v>max)max=v;});});
+  var y=axes(svg,W,H,m,max||1,n0),step=(W-m.l-m.r)/(n-1),x=function(i){return m.l+step*i;};
+  var every=Math.ceil(46/step);
+  labels.forEach(function(l,i){if(i%every===0)S('text',{x:x(i),y:H-m.b+16,'text-anchor':'middle'},svg,l);});
+  var cross=S('line',{y1:m.t,y2:H-m.b,stroke:'#8A8078','stroke-width':1,visibility:'hidden'},svg);
+  series.forEach(function(s){
+    var at={d:s.values.map(function(v,i){return (i?'L':'M')+x(i)+','+y(v);}).join(''),fill:'none',stroke:s.color,'stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round'};
+    if(s.dash)at['stroke-dasharray']='6 4';
+    S('path',at,svg);
+    s.values.forEach(function(v,i){S('circle',{cx:x(i),cy:y(v),r:s.dash?3:4,fill:s.color,stroke:'#fff','stroke-width':2},svg);});
+  });
+  var hit=S('rect',{x:m.l-step/2,y:m.t,width:W-m.l-m.r+step,height:H-m.t-m.b,fill:'transparent'},svg);
+  var mv=function(ev){var r=svg.getBoundingClientRect(),px=(ev.clientX-r.left)*W/r.width,i=Math.max(0,Math.min(n-1,Math.round((px-m.l)/step)));
+    cross.setAttribute('x1',x(i));cross.setAttribute('x2',x(i));cross.setAttribute('visibility','visible');
+    showTip(el,tip,ev,labels[i],series.map(function(s){return [s.name,fmt(s.values[i])];}));};
+  hit.addEventListener('pointermove',mv);hit.addEventListener('pointerdown',mv);
+  hit.addEventListener('pointerleave',function(){tip.style.display='none';cross.setAttribute('visibility','hidden');});
+}
+
+/* ---------- render ---------- */
+function drawCharts(){
+  if(!R)return;
+  var css=getComputedStyle(document.documentElement),V=css.getPropertyValue('--verde').trim(),Ro=css.getPropertyValue('--rojo').trim(),G=css.getPropertyValue('--gris').trim(),GM=css.getPropertyValue('--gris-meta').trim();
+  var d14=R.dias.slice(0,14);
+  lineChart($('cTrend'),'Tendencia diaria · Kg vs Meta',d14.map(function(d){return dm(d.fecha);}),
+    [{name:'Meta Kg',color:G,dash:true,values:d14.map(function(d){return d.meta;})},{name:'Kg Procesados',color:V,values:d14.map(function(d){return d.kg;})}],function(v){return n0(v)+' kg';});
+  var l9=R.lineas.slice(0,9);
+  barChart($('cLineas'),'Kg procesados por línea',l9.map(function(l){return l.name;}),[{name:'Kg Proc.',color:V,values:l9.map(function(l){return l.kg;})}],n0);
+  var c8=R.causas.slice(0,8);
+  barChart($('cCausas'),'Minutos de detención por causa',c8.map(function(c){return c.name;}),[{name:'Min Detención',color:Ro,values:c8.map(function(c){return c.min;})}],n0);
+  var f10=R.formatos.slice(0,10);
+  barChart($('cFormatos'),'Kg/Hr real vs meta por formato',f10.map(function(f){return f.name;}),
+    [{name:'Kg/Hr Real',color:V,values:f10.map(function(f){return f.kghr;})},{name:'Meta Kg/Hr',color:GM,values:f10.map(function(f){return f.meta;})}],n1);
+}
+function render(){
+  if(F.fin<F.ini){msg('err','La Fecha Fin es anterior a la Fecha Inicio. Corrige el rango para ver los indicadores.');return;}
+  if($('msg').className==='msg err')$('msg').className='msg';
+  R=compute(M,F);var K=R.kpi;
+  var cards=[['TOTAL KG PROCESADOS',n0(K.kg),'kg','Kilos a proceso'],['% CUMPLIMIENTO META',pc(K.cumpl),'','Kg reales / Meta total','hl'],
+    ['RENDIMIENTO (KG/HR)',n1(K.kghr),'','Kg por hora efectiva'],['PRODUCTIVIDAD (KG/HH)',n1(K.kghh),'','Kg por hora-hombre'],
+    ['HORAS EFECTIVAS',n1(K.he),'h','Brutas - paradas (sin colación)'],['MINUTOS DETENCIÓN',n0(K.minDet),'min','Detenciones (sin colación)'],
+    ['DOTACIÓN PROMEDIO',n0(K.dot),'','Personas por proceso'],['EFICIENCIA DE TIEMPO',pc(K.efic),'','Horas efec. / horas brutas'],
+    ['HORAS BRUTAS',n1(K.hb),'h','Duración total turnos'],['KG / DÍA (RANGO)',n0(K.kgDia),'kg','Promedio diario del rango']];
+  $('kpis').innerHTML=cards.map(function(c){return '<div class="kpi'+(c[4]?' '+c[4]:'')+'"><div class="l">'+esc(c[0])+'</div><div class="v">'+esc(c[1])+(c[2]?'<small>'+c[2]+'</small>':'')+'</div><div class="d">'+esc(c[3])+'</div></div>';}).join('');
+
+  var lr=function(l,name){return [name,n0(l.kg),n0(l.meta),pc(l.cumpl),n0(l.det),n1(l.kghr),n1(l.kghh),n1(l.dot1),n1(l.dot2),n1(l.hb1),n1(l.hb2)];};
+  table($('tLineas'),['Línea','Kg Proc.','Meta Kg','% Cumpl.','Min Det.','Kg/Hr','Kg/HH','Dotación T1','Dotación T2','Hrs Brut. T1','Hrs Brut. T2'],
+    R.lineas.map(function(l){return lr(l,l.name);}),lr(R.lineasTot,'TOTAL / PROM.'));
+  table($('tLotes'),['Variedad / Lote','Kg Proc.','% Cumpl.','Kg/Hr'],R.lotes.map(function(l){return [l.name,n0(l.kg),pc(l.cumpl),n1(l.kghr)];}));
+  table($('tMods'),['Modalidad','Kg Proc.','% Cumpl.','Kg/Hr','N° OP'],R.modalidades.map(function(l){return [l.name,n0(l.kg),pc(l.cumpl),n1(l.kghr),n0(l.n)];}));
+  table($('tCausas'),['Causa de Detención','Min Detención','N° Eventos','% del Total','Ranking'],
+    R.causas.map(function(c){return [c.name,n0(c.min),n0(c.n),pc(c.pct),c.rank===null?'':String(c.rank)];}),['TOTAL',n0(R.causasTot.min),n0(R.causasTot.n),pc(R.causasTot.pct),'']);
+  table($('tFormatos'),['Formato de Empaque','Kg Procesados','Kg/Hr Real','Meta Kg/Hr','% vs Meta'],
+    R.formatos.map(function(f){return [f.name,n0(f.kg),n1(f.kghr),n0(f.meta),pc(f.pct)];}));
+  warn($('wLotes'),R.fuera.lotes,'kg','un lote'); warn($('wMods'),R.fuera.modalidades,'kg','una modalidad');
+  warn($('wCausas'),R.fuera.causas,'min','una causa'); warn($('wFormatos'),R.fuera.formatos,'kg','un formato');
+
+  var dias=showAllDays?R.dias:R.dias.slice(0,14);
+  table($('tDias'),['Fecha','Kg Procesados','Meta Kg','% Cumpl.','Min Det.'],dias.map(function(d){return [dmy(d.fecha),n0(d.kg),n0(d.meta),pc(d.cumpl),n0(d.det)];}));
+  $('btnDias').textContent=showAllDays?'Ver solo 14 días':'Ver los '+R.dias.length+' días de la tabla';
+  $('btnDias').style.display=R.dias.length>14?'':'none';
+  table($('tSem'),['Semana','Kg Proc.','% Cumpl.'],R.semanas.map(function(s){return [String(s.sem),n0(s.kg),pc(s.cumpl)];}));
+  var sm=M.L.semanas;
+  $('evoNote').textContent='Tendencia diaria (14 días desde Fecha Inicio, respeta Turno y Línea). Tabla semanal (semanas '+sm[0]+'–'+sm[sm.length-1]+') a la derecha.';
+  drawCharts();
+}
+function paintMeta(){
+  $('title').textContent=M.title||'DASHBOARD DE CONTROL DE PROCESO Y KPI · ARÁNDANOS';
+  $('subtitle').textContent=M.subtitle||'Seguimiento de producción, embalaje y detenciones';
+  var ld=new Date(M.loaded),min=Infinity;M.P.forEach(function(x){if(x[0]<min)min=x[0];});
+  $('src').innerHTML='Fuente: <b>'+esc(M.file||'Excel')+'</b> · cargado el '+esc(ld.toLocaleDateString('es-PE')+' '+ld.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'}))+
+    '<br>'+esc(nf0.format(M.P.length))+' registros de producción · '+esc(nf0.format(M.D.length))+' detenciones · datos del '+esc(dmy(min))+' al '+esc(dmy(M.maxFecha));
+  $('foot').textContent='Los indicadores se calculan con las mismas reglas que la hoja "Dashboard KPI", a partir de las hojas Registro_Produccion, Registro_Detenciones y Parametros del Excel cargado. Para actualizar, usa el botón "Actualizar datos · Adjuntar Excel" o arrastra el archivo sobre esta página. Los botones "Descargar PDF" y "Descargar Excel" exportan lo que se ve con los filtros actuales.';
+}
+
+/* ---------- carga de Excel ---------- */
+function loadFile(file){
+  if(!file)return;
+  if(!/\.(xlsx|xlsm)$/i.test(file.name)){msg('err','El archivo "'+file.name+'" no es un Excel .xlsx. Adjunta el libro Dashboard_KPI_Proceso_Arandanos.xlsx.');return;}
+  msg('info','Leyendo "'+file.name+'"…');
+  file.arrayBuffer().then(readWorkbook).then(function(wb){
+    var nm=buildModel(wb,file.name);
+    M=nm; var saved=true;
+    try{localStorage.setItem(KEY,JSON.stringify(M));}catch(e){saved=false;}
+    paintMeta();setFilters(M.filt);render();
+    msg('ok','Datos actualizados desde "'+file.name+'": '+nf0.format(M.P.length)+' registros de producción y '+nf0.format(M.D.length)+' detenciones (hasta el '+dmy(M.maxFecha)+'). Filtros puestos como en la hoja Dashboard KPI del archivo.'+(saved?'':' Este navegador no permitió guardar la carga: al reabrir la página habrá que adjuntar el Excel otra vez.'));
+  }).catch(function(e){msg('err','No se pudo actualizar: '+(e&&e.message?e.message:e)+' El dashboard sigue mostrando los datos anteriores.');});
+}
+$('btnUp').addEventListener('click',function(){$('file').value='';$('file').click();});
+$('file').addEventListener('change',function(){loadFile(this.files[0]);});
+var dragN=0;
+window.addEventListener('dragenter',function(e){if(e.dataTransfer&&Array.prototype.indexOf.call(e.dataTransfer.types,'Files')>=0){dragN++;$('drop').style.display='flex';e.preventDefault();}});
+window.addEventListener('dragover',function(e){e.preventDefault();});
+window.addEventListener('dragleave',function(){dragN=Math.max(0,dragN-1);if(!dragN)$('drop').style.display='none';});
+window.addEventListener('drop',function(e){e.preventDefault();dragN=0;$('drop').style.display='none';if(e.dataTransfer&&e.dataTransfer.files.length)loadFile(e.dataTransfer.files[0]);});
+
+['fIni','fFin','fTurno','fLinea','fMod'].forEach(function(id){$(id).addEventListener('change',function(){if(readFilters())render();});});
+$('btnReset').addEventListener('click',function(){setFilters(M.filt);render();});
+$('btnDias').addEventListener('click',function(){showAllDays=!showAllDays;render();});
+var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(drawCharts,120);});
+
+/* ================= EXPORTAR: PDF y EXCEL (generados en el navegador) ================= */
+var C_ROJO='DA291C',C_VERDE='78BE20',C_GRIS='8A8078',C_META='D3CEC9',C_TABLA='A39C95',C_FONDO='F1EFED',C_SUAVE='FBE6E4',C_SEC='6B655E';
+
+/* ---------- escritor PDF mínimo (vectorial, Helvetica) ---------- */
+function PDFDoc(){
+  var W=841.89,H=595.28,pages=[],cur=null;
+  var WN=[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
+  var WB=[278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584];
+  var SP={'–':0x96,'—':0x97,'…':0x85,'•':0x95,'€':0x80,'’':0x92,'‘':0x91,'“':0x93,'”':0x94};
+  function hex(s){var o='';for(var i=0;i<s.length;i++){var ch=s[i],c=s.charCodeAt(i);if(SP[ch])c=SP[ch];else if(c>255||c<32)c=63;o+=(c<16?'0':'')+c.toString(16);}return o;}
+  function tw(s,size,bold){var t=bold?WB:WN,w=0,b=String(s).normalize('NFD').replace(/[̀-ͯ]/g,'');
+    for(var i=0;i<b.length;i++){var c=b.charCodeAt(i);w+=(c>=32&&c<=126)?t[c-32]:(c===183?278:556);}return w*size/1000;}
+  function col(h,op){return (parseInt(h.slice(0,2),16)/255).toFixed(3)+' '+(parseInt(h.slice(2,4),16)/255).toFixed(3)+' '+(parseInt(h.slice(4,6),16)/255).toFixed(3)+' '+op;}
+  var f=function(n){return (Math.round(n*100)/100).toString();};
+  var api={W:W,H:H,tw:tw,
+    newPage:function(){cur=[];pages.push(cur);},
+    pageCount:function(){return pages.length;},
+    setPage:function(i){cur=pages[i];},
+    rect:function(x,y,w,h,c){cur.push(col(c,'rg')+' '+f(x)+' '+f(H-y-h)+' '+f(w)+' '+f(h)+' re f');},
+    line:function(x1,y1,x2,y2,c,lw,dash){cur.push(col(c,'RG')+' '+f(lw||0.5)+' w '+(dash?'['+dash+'] 0 d ':'[] 0 d ')+f(x1)+' '+f(H-y1)+' m '+f(x2)+' '+f(H-y2)+' l S');},
+    poly:function(pts,c,lw,dash){var s=col(c,'RG')+' '+f(lw)+' w 1 j 1 J '+(dash?'['+dash+'] 0 d ':'[] 0 d ');pts.forEach(function(p,i){s+=f(p[0])+' '+f(H-p[1])+(i?' l ':' m ');});cur.push(s+'S');},
+    dot:function(x,y,r,c){var k=r*0.5523,Y=H-y;cur.push(col(c,'rg')+' '+f(x+r)+' '+f(Y)+' m '+f(x+r)+' '+f(Y+k)+' '+f(x+k)+' '+f(Y+r)+' '+f(x)+' '+f(Y+r)+' c '+f(x-k)+' '+f(Y+r)+' '+f(x-r)+' '+f(Y+k)+' '+f(x-r)+' '+f(Y)+' c '+f(x-r)+' '+f(Y-k)+' '+f(x-k)+' '+f(Y-r)+' '+f(x)+' '+f(Y-r)+' c '+f(x+k)+' '+f(Y-r)+' '+f(x+r)+' '+f(Y-k)+' '+f(x+r)+' '+f(Y)+' c f');},
+    text:function(s,x,y,size,o){o=o||{};s=String(s);var w=tw(s,size,o.bold),c=col(o.color||'000000','rg'),F=o.bold?'/F2':'/F1';
+      if(o.rot){var a=o.rot*Math.PI/180,cs=Math.cos(a),sn=Math.sin(a),dx=o.align==='right'?-w:0;
+        cur.push('BT '+F+' '+f(size)+' Tf '+c+' '+f(cs)+' '+f(sn)+' '+f(-sn)+' '+f(cs)+' '+f(x+dx*cs)+' '+f(H-y+dx*sn)+' Tm <'+hex(s)+'> Tj ET');return;}
+      if(o.align==='right')x-=w;else if(o.align==='center')x-=w/2;
+      cur.push('BT '+F+' '+f(size)+' Tf '+c+' '+f(x)+' '+f(H-y)+' Td <'+hex(s)+'> Tj ET');},
+    fit:function(s,size,bold,maxW){s=String(s);if(tw(s,size,bold)<=maxW)return s;while(s.length>1&&tw(s+'…',size,bold)>maxW)s=s.slice(0,-1);return s+'…';},
+    wrap:function(s,size,maxW){var out=[],ln='';String(s).split(' ').forEach(function(w){var t=ln?ln+' '+w:w;if(tw(t,size)>maxW&&ln){out.push(ln);ln=w;}else ln=t;});if(ln)out.push(ln);return out;},
+    build:function(){
+      var objs=[],add=function(s){objs.push(s);return objs.length;};
+      add('<< /Type /Catalog /Pages 2 0 R >>');add('');
+      add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+      add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+      var kids=[];
+      pages.forEach(function(pg){var st=pg.join('\n');var c=add('<< /Length '+st.length+' >>\nstream\n'+st+'\nendstream');
+        kids.push(add('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+W+' '+H+'] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents '+c+' 0 R >>')+' 0 R');});
+      objs[1]='<< /Type /Pages /Kids ['+kids.join(' ')+'] /Count '+kids.length+' >>';
+      var out='%PDF-1.4\n',offs=[];
+      objs.forEach(function(o,i){offs.push(out.length);out+=(i+1)+' 0 obj\n'+o+'\nendobj\n';});
+      var xr=out.length;out+='xref\n0 '+(objs.length+1)+'\n0000000000 65535 f \n';
+      offs.forEach(function(o){out+=('0000000000'+o).slice(-10)+' 00000 n \n';});
+      out+='trailer\n<< /Size '+(objs.length+1)+' /Root 1 0 R >>\nstartxref\n'+xr+'\n%%EOF';
+      var u=new Uint8Array(out.length);for(var i=0;i<out.length;i++)u[i]=out.charCodeAt(i)&255;return u;
+    }};
+  return api;
+}
+
+function filtroTexto(){return 'Fecha Inicio: '+dmy(F.ini)+'   ·   Fecha Fin: '+dmy(F.fin)+'   ·   Turno: '+F.turno+'   ·   Línea: '+F.linea+'   ·   Modalidad: '+F.modalidad;}
+function fueraTexto(list,unit,what){
+  if(!list.length)return '';var tot=0;list.forEach(function(x){tot+=x[1];});
+  return 'Fuera de esta tabla: '+n0(tot)+' '+unit+' del filtro actual están registrados con '+what+' que no figura en las filas del dashboard: '+
+    list.slice(0,6).map(function(x){return x[0]+' ('+n0(x[1])+')';}).join(', ')+(list.length>6?' y '+(list.length-6)+' más':'')+'.';
+}
+/* Contenido tabular común a PDF y Excel: valores crudos + tipo de formato (t=texto,i=entero,d=1 decimal,p=%,f=fecha) */
+function tablas(){
+  var lr=function(l,n){return [n,l.kg,l.meta,l.cumpl,l.det,l.kghr,l.kghh,l.dot1,l.dot2,l.hb1,l.hb2];};
+  return {
+    lineas:{head:['Línea','Kg Proc.','Meta Kg','% Cumpl.','Min Det.','Kg/Hr','Kg/HH','Dotación T1','Dotación T2','Hrs Brut. T1','Hrs Brut. T2'],types:'tiipidddddd',
+      rows:R.lineas.map(function(l){return lr(l,l.name);}),tot:lr(R.lineasTot,'TOTAL / PROM.')},
+    lotes:{head:['Variedad / Lote','Kg Proc.','% Cumpl.','Kg/Hr'],types:'tipd',rows:R.lotes.map(function(l){return [l.name,l.kg,l.cumpl,l.kghr];})},
+    mods:{head:['Modalidad','Kg Proc.','% Cumpl.','Kg/Hr','N° OP'],types:'tipdi',rows:R.modalidades.map(function(l){return [l.name,l.kg,l.cumpl,l.kghr,l.n];})},
+    causas:{head:['Causa de Detención','Min Detención','N° Eventos','% del Total','Ranking'],types:'tiipi',
+      rows:R.causas.map(function(c){return [c.name,c.min,c.n,c.pct,c.rank];}),tot:['TOTAL',R.causasTot.min,R.causasTot.n,R.causasTot.pct,null]},
+    formatos:{head:['Formato de Empaque','Kg Procesados','Kg/Hr Real','Meta Kg/Hr','% vs Meta'],types:'tidip',rows:R.formatos.map(function(x){return [x.name,x.kg,x.kghr,x.meta,x.pct];})},
+    dias:{head:['Fecha','Kg Procesados','Meta Kg','% Cumpl.','Min Det.'],types:'fiipi',rows:R.dias.map(function(d){return [d.fecha,d.kg,d.meta,d.cumpl,d.det];})},
+    semanas:{head:['Semana','Kg Proc.','% Cumpl.'],types:'tip',rows:R.semanas.map(function(s){return [String(s.sem),s.kg,s.cumpl];})}
+  };
+}
+function kpiCards(){var K=R.kpi;return [
+  ['TOTAL KG PROCESADOS',K.kg,'i','kg','Kilos a proceso'],['% CUMPLIMIENTO META',K.cumpl,'p','','Kg reales / Meta total'],
+  ['RENDIMIENTO (KG/HR)',K.kghr,'d','','Kg por hora efectiva'],['PRODUCTIVIDAD (KG/HH)',K.kghh,'d','','Kg por hora-hombre'],
+  ['HORAS EFECTIVAS',K.he,'d','h','Brutas - paradas (sin colación)'],['MINUTOS DETENCIÓN',K.minDet,'i','min','Detenciones (sin colación)'],
+  ['DOTACIÓN PROMEDIO',K.dot,'i','','Personas por proceso'],['EFICIENCIA DE TIEMPO',K.efic,'p','','Horas efec. / horas brutas'],
+  ['HORAS BRUTAS',K.hb,'d','h','Duración total turnos'],['KG / DÍA (RANGO)',K.kgDia,'i','kg','Promedio diario del rango']];}
+function fmtT(v,t){if(v===null||v===undefined)return '';return t==='t'?String(v):t==='i'?n0(v):t==='d'?n1(v):t==='p'?pc(v):dmy(v);}
+
+function makePDF(){
+  var p=PDFDoc(),W=p.W,H=p.H,mL=36,CW=W-72,y=0,T=tablas();
+  var page=function(){p.newPage();p.rect(0,0,W,5,C_ROJO);y=30;};
+  var ensure=function(h){if(y+h>H-34)page();};
+  var section=function(t){ensure(60);p.rect(mL,y,CW,18,C_FONDO);p.rect(mL,y,4,18,C_ROJO);p.text(t,mL+11,y+12.6,10,{bold:true});y+=26;};
+  var sub=function(t,x){p.text(t,x===undefined?mL:x,y+8,9.5,{bold:true});};
+  var note=function(t,x,w){if(!t)return 0;var ls=p.wrap(t,7.5,w);ls.forEach(function(l,i){p.text(l,x,y+8+i*9.5,7.5,{color:C_SEC});});return ls.length*9.5+4;};
+  var table=function(tb,x,w,y0,rows,canBreak){
+    var n=tb.head.length,first=Math.max(w*0.2,Math.min(w*0.42,150)),cw=(w-first)/(n-1),rh=14,yy=y0;
+    var cx=function(i){return i===0?x+5:x+first+cw*i-5;};
+    var head=function(){p.rect(x,yy,w,rh+1,C_TABLA);tb.head.forEach(function(h,i){p.text(p.fit(h,8,true,(i?cw:first)-8),cx(i),yy+10,8,{bold:true,align:i?'right':'left'});});yy+=rh+1;};
+    var row=function(r,tot){
+      if(tot)p.rect(x,yy,w,rh,C_FONDO);
+      r.forEach(function(v,i){var s=fmtT(v,tb.types[i]),zero=i>0&&!tot&&(v===0||v===null);
+        p.text(p.fit(s,8,tot,(i?cw:first)-8),cx(i),yy+9.8,8,{bold:!!tot,align:i?'right':'left',color:zero?C_SEC:'000000'});});
+      yy+=rh;p.line(x,yy,x+w,yy,C_TABLA,tot?1:0.4);};
+    head();
+    rows.forEach(function(r){if(canBreak&&yy+rh>H-34){page();yy=y;head();}row(r);});
+    if(tb.tot)row(tb.tot,true);
+    return yy;
+  };
+  // ---- página 1: encabezado, KPI y tabla por línea
+  page();
+  p.text(M.title||'DASHBOARD DE CONTROL DE PROCESO Y KPI · ARÁNDANOS',mL,y+10,15,{bold:true});
+  p.text(M.subtitle||'',mL,y+24,9,{color:C_SEC});
+  var gen=new Date();p.text('Generado: '+gen.toLocaleDateString('es-PE')+' '+gen.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'}),W-mL,y+10,8,{align:'right',color:C_SEC});
+  p.text('Fuente: '+(M.file||'Excel'),W-mL,y+21,8,{align:'right',color:C_SEC});
+  y+=36;p.rect(mL,y,CW,18,C_FONDO);p.text(p.fit(filtroTexto(),8.5,true,CW-16),mL+8,y+12.2,8.5,{bold:true});y+=28;
+  section('1.  RESUMEN EJECUTIVO');
+  var cards=kpiCards(),gw=8,cw5=(CW-gw*4)/5;
+  cards.forEach(function(c,i){var x=mL+(i%5)*(cw5+gw),yy=y+Math.floor(i/5)*58;
+    p.rect(x,yy,cw5,50,i===1?C_SUAVE:C_FONDO);p.text(c[0],x+8,yy+13,6.8,{bold:true,color:C_SEC});
+    var v=fmtT(c[1],c[2]);p.text(v,x+8,yy+32,15,{bold:true});
+    if(c[3])p.text(c[3],x+11+p.tw(v,15,true),yy+32,8,{color:C_SEC});
+    p.text(c[4],x+8,yy+43.5,7,{color:C_SEC});});
+  y+=124;
+  section('2.  COMPARATIVOS');
+  sub('2.1  Por línea de empaque');y+=13;
+  y+=note('Respeta fecha y turno; ignora el filtro de Línea. Dotación y Hrs Brutas T1/T2 = valores por turno (ignoran el filtro Turno).',mL,CW);
+  y=table(T.lineas,mL,CW,y,T.lineas.rows,true)+16;
+  // ---- 2.2 y 2.3 lado a lado
+  ensure(120);var half=(CW-20)/2,y0=y;
+  sub('2.2  Por variedad / lote');sub('2.3  Por modalidad de vaciado',mL+half+20);y+=13;
+  var ya=table(T.lotes,mL,half,y,T.lotes.rows),yb=table(T.mods,mL+half+20,half,y,T.mods.rows);
+  y=ya+2;var na=note(fueraTexto(R.fuera.lotes,'kg','un lote'),mL,half);y=yb+2;var nb=note(fueraTexto(R.fuera.modalidades,'kg','una modalidad'),mL+half+20,half);
+  y=Math.max(ya+na,yb+nb)+16;
+  section('3.  ANÁLISIS DE DETENCIONES  (Pareto por causa)');
+  y+=note('Minutos y frecuencia por causa en el rango/turno/línea seleccionados.',mL,CW);
+  y=table(T.causas,mL,CW,y,T.causas.rows,true)+2;y+=note(fueraTexto(R.fuera.causas,'min','una causa'),mL,CW)+14;
+  ensure(26+16+15+T.formatos.rows.length*14+24);
+  section('4.  RENDIMIENTO POR FORMATO DE EMPAQUE');
+  y+=note('Kg/Hr real vs meta por formato. % = rendimiento real / meta del formato.',mL,CW);
+  y=table(T.formatos,mL,CW,y,T.formatos.rows,true)+2;y+=note(fueraTexto(R.fuera.formatos,'kg','un formato'),mL,CW)+14;
+  // ---- gráficos
+  page();section('5.  GRÁFICOS');
+  var gwd=(CW-16)/2,gh=228;
+  var frame=function(x,yy,title,leg){p.line(x,yy,x+gwd,yy,C_META,0.6);p.line(x,yy+gh,x+gwd,yy+gh,C_META,0.6);p.line(x,yy,x,yy+gh,C_META,0.6);p.line(x+gwd,yy,x+gwd,yy+gh,C_META,0.6);
+    p.text(title,x+10,yy+16,10,{bold:true});var lx=x+10;
+    (leg||[]).forEach(function(s){if(s.line)p.line(lx,yy+26,lx+14,yy+26,s.color,2,s.dash?'4 3':null);else p.rect(lx,yy+22,8,8,s.color);lx+=s.line?18:12;p.text(s.name,lx,yy+29,7.5,{color:C_SEC});lx+=p.tw(s.name,7.5)+12;});};
+  var yax=function(x,yy,pl,pr,pt,pb,max){var tk=ticks(max),top=tk[tk.length-1],ys=function(v){return yy+pt+(gh-pt-pb)*(1-v/top);};
+    tk.forEach(function(t){p.line(x+pl,ys(t),x+gwd-pr,ys(t),t===0?C_TABLA:'E6E2DE',0.5);p.text(n0(t),x+pl-4,ys(t)+2.5,7,{align:'right',color:C_SEC});});return ys;};
+  var bar=function(x,yy,title,cats,series,fmt){
+    frame(x,yy,title,series.length>1?series:null);
+    var max=0,tot=0;series.forEach(function(s){s.values.forEach(function(v){if(v>max)max=v;tot+=v;});});
+    if(!tot){p.text('Sin datos para los filtros seleccionados.',x+gwd/2,yy+gh/2,8.5,{align:'center',color:C_SEC});return;}
+    var pl=40,pr=10,pt=42,n=cats.length,band=(gwd-pl-pr)/n,ml=0;cats.forEach(function(c){ml=Math.max(ml,p.tw(p.fit(c,7,false,95),7));});
+    var rot=ml>band-4,pb=rot?Math.min(70,ml*0.66+14):20,ys=yax(x,yy,pl,pr,pt,pb,max),ns=series.length,bw=Math.min(22,(band*0.72-1.5*(ns-1))/ns),gw2=bw*ns+1.5*(ns-1);
+    cats.forEach(function(c,i){var cx=x+pl+band*i+band/2;
+      series.forEach(function(s,j){var v=s.values[i];if(!(v>0))return;var bx=cx-gw2/2+j*(bw+1.5),by=ys(v);p.rect(bx,by,bw,ys(0)-by,s.color);
+        if(ns===1&&band>=30)p.text(fmt(v),bx+bw/2,by-3,6.8,{align:'center'});});
+      var lb=p.fit(c,7,false,95);
+      if(rot)p.text(lb,cx+3,ys(0)+9,7,{rot:40,align:'right',color:C_SEC});else p.text(lb,cx,ys(0)+10,7,{align:'center',color:C_SEC});});
+  };
+  var d14=R.dias.slice(0,14),gx2=mL+gwd+16,gy=y,gy2=y+gh+14;
+  (function(){var series=[{name:'Meta Kg',color:C_GRIS,dash:true,line:true,values:d14.map(function(d){return d.meta;})},{name:'Kg Procesados',color:C_VERDE,line:true,values:d14.map(function(d){return d.kg;})}];
+    frame(mL,gy,'Tendencia diaria · Kg vs Meta',series);
+    var max=0;series.forEach(function(s){s.values.forEach(function(v){if(v>max)max=v;});});
+    var pl=44,pr=14,pt=42,pb=20,ys=yax(mL,gy,pl,pr,pt,pb,max||1),st=(gwd-pl-pr)/13,xs=function(i){return mL+pl+st*i;};
+    d14.forEach(function(d,i){if(i%2===0)p.text(dm(d.fecha),xs(i),ys(0)+10,7,{align:'center',color:C_SEC});});
+    series.forEach(function(s){p.poly(s.values.map(function(v,i){return [xs(i),ys(v)];}),s.color,1.6,s.dash?'4 3':null);
+      s.values.forEach(function(v,i){p.dot(xs(i),ys(v),s.dash?1.6:2.2,s.color);});});})();
+  var l9=R.lineas.slice(0,9),c8=R.causas.slice(0,8),f10=R.formatos.slice(0,10);
+  bar(gx2,gy,'Kg procesados por línea',l9.map(function(l){return l.name;}),[{name:'Kg Proc.',color:C_VERDE,values:l9.map(function(l){return l.kg;})}],n0);
+  bar(mL,gy2,'Minutos de detención por causa',c8.map(function(c){return c.name;}),[{name:'Min Detención',color:C_ROJO,values:c8.map(function(c){return c.min;})}],n0);
+  bar(gx2,gy2,'Kg/Hr real vs meta por formato',f10.map(function(x){return x.name;}),[{name:'Kg/Hr Real',color:C_VERDE,values:f10.map(function(x){return x.kghr;})},{name:'Meta Kg/Hr',color:C_META,values:f10.map(function(x){return x.meta;})}],n1);
+  // ---- evolución
+  page();section('6.  EVOLUCIÓN EN EL TIEMPO');
+  var sm=M.L.semanas;y+=note('Tendencia diaria (14 días desde Fecha Inicio, respeta Turno y Línea). Tabla semanal (semanas '+sm[0]+'–'+sm[sm.length-1]+') a la derecha.',mL,CW);
+  sub('Tendencia diaria');sub('Resumen semanal',mL+half+20);y+=13;
+  table(T.dias,mL,half,y,T.dias.rows.slice(0,14));table(T.semanas,mL+half+20,half,y,T.semanas.rows);
+  var np=p.pageCount();
+  for(var i=0;i<np;i++){p.setPage(i);p.text((M.title||'Dashboard KPI')+'  ·  '+dmy(F.ini)+' al '+dmy(F.fin),mL,H-16,7,{color:C_SEC});p.text('Página '+(i+1)+' de '+np,W-mL,H-16,7,{align:'right',color:C_SEC});}
+  return p.build();
+}
+
+/* ---------- escritor XLSX mínimo ---------- */
+var CRCT=(function(){var t=[],c,n,k;for(n=0;n<256;n++){c=n;for(k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+function crc32(u){var c=0xFFFFFFFF;for(var i=0;i<u.length;i++)c=CRCT[(c^u[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function zipStore(files){
+  var te=new TextEncoder(),parts=[],cd=[],off=0;
+  files.forEach(function(fl){var nm=te.encode(fl[0]),d=te.encode(fl[1]),crc=crc32(d);
+    var lh=new DataView(new ArrayBuffer(30));lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);lh.setUint16(10,0,true);lh.setUint16(12,0x21,true);
+    lh.setUint32(14,crc,true);lh.setUint32(18,d.length,true);lh.setUint32(22,d.length,true);lh.setUint16(26,nm.length,true);
+    var ch=new DataView(new ArrayBuffer(46));ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);ch.setUint16(14,0x21,true);
+    ch.setUint32(16,crc,true);ch.setUint32(20,d.length,true);ch.setUint32(24,d.length,true);ch.setUint16(28,nm.length,true);ch.setUint32(42,off,true);
+    parts.push(new Uint8Array(lh.buffer),nm,d);cd.push(new Uint8Array(ch.buffer),nm);off+=30+nm.length+d.length;});
+  var cdLen=0;cd.forEach(function(x){cdLen+=x.length;});
+  var e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cdLen,true);e.setUint32(16,off,true);
+  var all=parts.concat(cd,[new Uint8Array(e.buffer)]),tot=0;all.forEach(function(x){tot+=x.length;});
+  var out=new Uint8Array(tot),p=0;all.forEach(function(x){out.set(x,p);p+=x.length;});return out;
+}
+function makeXLSX(){
+  var T=tablas(),xe=function(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'');};
+  // estilos: 0 normal,1 negrita,2 encabezado,3 entero,4 decimal,5 %,6 fecha,7..11 = total(texto,entero,decimal,%,fecha),12 título,13 nota,14 entero grande negrita,15 dec negrita,16 % negrita
+  var ST={t:0,i:3,d:4,p:5,f:6},colL=function(i){var s='';i++;while(i>0){s=String.fromCharCode(65+(i-1)%26)+s;i=Math.floor((i-1)/26);}return s;};
+  var cell=function(v,r,c,s){var ref=colL(c)+r;if(v===null||v===undefined||v==='')return '<c r="'+ref+'" s="'+s+'"/>';
+    return typeof v==='number'?'<c r="'+ref+'" s="'+s+'"><v>'+v+'</v></c>':'<c r="'+ref+'" s="'+s+'" t="inlineStr"><is><t xml:space="preserve">'+xe(v)+'</t></is></c>';};
+  function Sheet(){var rows=[],n=0;return {
+    row:function(cells){n++;rows.push('<row r="'+n+'">'+cells.map(function(c,i){return c===null?'':cell(c[0],n,i,c[1]);}).join('')+'</row>');},
+    blank:function(){n++;},
+    table:function(tb,rws){this.row(tb.head.map(function(h){return [h,2];}));var me=this;
+      (rws||tb.rows).forEach(function(r){me.row(r.map(function(v,i){return [v,ST[tb.types[i]]];}));});
+      if(tb.tot)this.row(tb.tot.map(function(v,i){return [v,7+({t:0,i:1,d:2,p:3,f:4})[tb.types[i]]];}));},
+    xml:function(widths){return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols>'+
+      widths.map(function(w,i){return '<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>';}).join('')+'</cols><sheetData>'+rows.join('')+'</sheetData></worksheet>';}};}
+  var title=M.title||'DASHBOARD DE CONTROL DE PROCESO Y KPI · ARÁNDANOS',sheets=[];
+  var s=Sheet();s.row([[title,12]]);s.row([[M.subtitle||'',13]]);s.row([['Fuente: '+(M.file||'Excel')+' · exportado el '+new Date().toLocaleString('es-PE'),13]]);s.blank();
+  s.row([['FILTROS DE BÚSQUEDA Y ANÁLISIS',1]]);
+  s.row([['Fecha Inicio',0],[F.ini,6]]);s.row([['Fecha Fin',0],[F.fin,6]]);s.row([['Turno',0],[F.turno,0]]);s.row([['Línea',0],[F.linea,0]]);s.row([['Modalidad',0],[F.modalidad,0]]);s.blank();
+  s.row([['1.  RESUMEN EJECUTIVO',1]]);s.row([['Indicador',2],['Valor',2],['Unidad',2],['Descripción',2]]);
+  kpiCards().forEach(function(c){s.row([[c[0],0],[c[1],ST[c[2]]],[c[3],0],[c[4],0]]);});
+  sheets.push(['Resumen',s.xml([30,16,10,34])]);
+  s=Sheet();s.row([['2.1  Por línea de empaque',12]]);s.row([['Respeta fecha y turno; ignora el filtro de Línea. Dotación y Hrs Brutas T1/T2 = valores por turno (ignoran el filtro Turno).',13]]);s.blank();s.table(T.lineas);
+  sheets.push(['Por línea',s.xml([18,12,12,10,10,10,10,12,12,12,12])]);
+  s=Sheet();s.row([['2.2  Por variedad / lote',12]]);s.blank();s.table(T.lotes);var ft=fueraTexto(R.fuera.lotes,'kg','un lote');if(ft)s.row([[ft,13]]);
+  s.blank();s.row([['2.3  Por modalidad de vaciado',12]]);s.blank();s.table(T.mods);ft=fueraTexto(R.fuera.modalidades,'kg','una modalidad');if(ft)s.row([[ft,13]]);
+  sheets.push(['Lote y modalidad',s.xml([24,12,10,10,8])]);
+  s=Sheet();s.row([['3.  ANÁLISIS DE DETENCIONES  (Pareto por causa)',12]]);s.row([['Minutos y frecuencia por causa en el rango/turno/línea seleccionados.',13]]);s.blank();s.table(T.causas);
+  ft=fueraTexto(R.fuera.causas,'min','una causa');if(ft)s.row([[ft,13]]);
+  sheets.push(['Detenciones',s.xml([36,14,12,12,10])]);
+  s=Sheet();s.row([['4.  RENDIMIENTO POR FORMATO DE EMPAQUE',12]]);s.row([['Kg/Hr real vs meta por formato. % = rendimiento real / meta del formato.',13]]);s.blank();s.table(T.formatos);
+  ft=fueraTexto(R.fuera.formatos,'kg','un formato');if(ft)s.row([[ft,13]]);
+  sheets.push(['Formatos',s.xml([26,14,12,12,10])]);
+  s=Sheet();s.row([['6.  EVOLUCIÓN EN EL TIEMPO · Tendencia diaria',12]]);s.row([['Desde Fecha Inicio; respeta Turno y Línea.',13]]);s.blank();s.table(T.dias);
+  sheets.push(['Evolución diaria',s.xml([14,14,12,10,10])]);
+  s=Sheet();s.row([['6.  EVOLUCIÓN EN EL TIEMPO · Resumen semanal',12]]);s.row([['Respeta Turno y Línea.',13]]);s.blank();s.table(T.semanas);
+  sheets.push(['Semanal',s.xml([12,14,10])]);
+
+  var H='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+  var fnt=function(b,sz,c){return '<font>'+(b?'<b/>':'')+'<sz val="'+sz+'"/><color rgb="FF'+c+'"/><name val="Calibri"/><family val="2"/></font>';};
+  var fill=function(c){return '<fill><patternFill patternType="solid"><fgColor rgb="FF'+c+'"/><bgColor indexed="64"/></patternFill></fill>';};
+  var xf=function(nf,font,fl,bd,al){return '<xf numFmtId="'+nf+'" fontId="'+font+'" fillId="'+fl+'" borderId="'+bd+'" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"'+(al?' applyAlignment="1"><alignment horizontal="'+al+'"/></xf>':'/>');};
+  var styles=H+'<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="3"><numFmt numFmtId="164" formatCode="#,##0.0"/><numFmt numFmtId="165" formatCode="0.0%"/><numFmt numFmtId="166" formatCode="dd\\-mm\\-yyyy"/></numFmts>'+
+    '<fonts count="4">'+fnt(0,11,'000000')+fnt(1,11,'000000')+fnt(1,14,'000000')+fnt(0,10,C_SEC)+'</fonts>'+
+    '<fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>'+fill(C_TABLA)+fill(C_FONDO)+'</fills>'+
+    '<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left/><right/><top/><bottom style="thin"><color rgb="FF'+C_TABLA+'"/></bottom><diagonal/></border></borders>'+
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="14">'+
+    xf(0,0,0,0)+xf(0,1,0,0)+xf(0,1,2,0,'center')+xf(3,0,0,1)+xf(164,0,0,1)+xf(165,0,0,1)+xf(166,0,0,1,'left')+
+    xf(0,1,3,1)+xf(3,1,3,1)+xf(164,1,3,1)+xf(165,1,3,1)+xf(166,1,3,1)+xf(0,2,0,0)+xf(0,3,0,0)+
+    '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+  var files=[['[Content_Types].xml',H+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'+
+      sheets.map(function(x,i){return '<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';}).join('')+'</Types>'],
+    ['_rels/.rels',H+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+    ['xl/workbook.xml',H+'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'+
+      sheets.map(function(x,i){return '<sheet name="'+xe(x[0])+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>';}).join('')+'</sheets></workbook>'],
+    ['xl/_rels/workbook.xml.rels',H+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+      sheets.map(function(x,i){return '<Relationship Id="rId'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>';}).join('')+
+      '<Relationship Id="rId'+(sheets.length+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'],
+    ['xl/styles.xml',styles]];
+  sheets.forEach(function(x,i){files.push(['xl/worksheets/sheet'+(i+1)+'.xml',x[1]]);});
+  return zipStore(files);
+}
+
+/* ---------- entrega del archivo ---------- */
+var dlNS; // undefined = aún no consultado
+function getDownloads(){
+  if(dlNS!==undefined)return Promise.resolve(dlNS);
+  if(!(window.claude&&typeof window.claude.use==='function')){dlNS=null;return Promise.resolve(null);}
+  return window.claude.use('downloads').then(function(ns){dlNS=ns||null;return dlNS;},function(){dlNS=null;return null;});
+}
+function exportar(kind){
+  if(!R||F.fin<F.ini){msg('err','Corrige el rango de fechas antes de descargar.');return;}
+  var name='Dashboard_KPI_Arandanos_'+serialToISO(F.ini)+'_a_'+serialToISO(F.fin)+'.'+kind,bytes;
+  try{bytes=kind==='pdf'?makePDF():makeXLSX();}catch(e){msg('err','No se pudo generar el archivo: '+(e&&e.message?e.message:e));return;}
+  var blob=new Blob([bytes],{type:kind==='pdf'?'application/pdf':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  msg('info','Preparando "'+name+'"… confirma la descarga cuando aparezca el aviso.');
+  getDownloads().then(function(ns){
+    if(ns){return ns.save({filename:name,data:blob}).then(function(){msg('ok','Archivo "'+name+'" descargado con los filtros actuales.');},
+      function(e){var c=e&&e.code;msg(c==='declined'?'info':'err',c==='declined'?'Descarga cancelada.':c==='rate_limited'?'Ya hay una descarga pendiente de confirmar. Espera un momento y vuelve a intentarlo.':'La descarga no está disponible en esta vista. Abre el dashboard en claude.ai e inténtalo otra vez.');});}
+    var inFrame=false;try{inFrame=window.self!==window.top;}catch(e){inFrame=true;}
+    if(inFrame){msg('err','La descarga no está disponible en esta vista. Abre el dashboard en claude.ai e inténtalo otra vez.');return;}
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(function(){URL.revokeObjectURL(a.href);},4000);msg('ok','Archivo "'+name+'" generado con los filtros actuales.');
+  });
+}
+$('btnPdf').addEventListener('click',function(){exportar('pdf');});
+$('btnXls').addEventListener('click',function(){exportar('xlsx');});
+window.__exp={pdf:makePDF,xlsx:makeXLSX};
+
+// Petición para obtener datos.xlsx del repositorio
+fetch('datos.xlsx')
+  .then(function(response) {
+    if (!response.ok) throw new Error('Archivo no encontrado');
+    return response.arrayBuffer();
+  })
+  .then(readWorkbook)
+  .then(function(wb) {
+    M = buildModel(wb, 'datos.xlsx');
+    paintMeta();
+    setFilters(M.filt);
+    render();
+  })
+  .catch(function(error) {
+    msg('err', 'Error al cargar datos.xlsx inicial: ' + error.message);
+  });
+
+window.__dash={load:loadFile,get R(){return R;}};
+})();
+</script>
+</body>
+</html>
