@@ -975,10 +975,12 @@ window.__exp={pdf:makePDF,xlsx:makeXLSX};
 
 // Petición para obtener datos.xlsx del repositorio
 
-const PUBLISHED_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQFS2BP2Q0AbOzV7curTIxCEIBzgBIg2jlt7Jp0PL1roSPzOf9nFVi02roPe11Ic2MgmnDvVVqogAiw/pub?output=xlsx';
+const GOOGLE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQFS2BP2Q0AbOzV7curTIxCEIBzgBIg2jlt7Jp0PL1roSPzOf9nFVi02roPe11Ic2MgmnDvVVqogAiw/pub?output=xlsx';
 
+// El proxy envuelve la URL original para inyectar las cabeceras de seguridad
+const PROXY_URL = 'https://corsproxy.io/?' + encodeURIComponent(GOOGLE_URL);
 
-fetch(PUBLISHED_URL)
+fetch(PROXY_URL)
   .then(function(response) {
     if (!response.ok) throw new Error('Error al conectar con la hoja publicada.');
     return response.arrayBuffer();
