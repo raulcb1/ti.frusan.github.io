@@ -974,20 +974,24 @@ $('btnXls').addEventListener('click',function(){exportar('xlsx');});
 window.__exp={pdf:makePDF,xlsx:makeXLSX};
 
 // Petición para obtener datos.xlsx del repositorio
-fetch('datos.xlsx')
+
+const PUBLISHED_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQFS2BP2Q0AbOzV7curTIxCEIBzgBIg2jlt7Jp0PL1roSPzOf9nFVi02roPe11Ic2MgmnDvVVqogAiw/pub?output=xlsx';
+
+
+fetch(PUBLISHED_URL)
   .then(function(response) {
-    if (!response.ok) throw new Error('Archivo no encontrado');
+    if (!response.ok) throw new Error('Error al conectar con la hoja publicada.');
     return response.arrayBuffer();
   })
   .then(readWorkbook)
   .then(function(wb) {
-    M = buildModel(wb, 'datos.xlsx');
+    M = buildModel(wb, 'Drive_Publicado.xlsx');
     paintMeta();
     setFilters(M.filt);
     render();
   })
   .catch(function(error) {
-    msg('err', 'Error al cargar datos.xlsx inicial: ' + error.message);
+    msg('err', 'Fallo de extracción: ' + error.message);
   });
 
 window.__dash={load:loadFile,get R(){return R;}};
